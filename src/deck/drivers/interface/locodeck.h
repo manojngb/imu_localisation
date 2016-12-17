@@ -51,7 +51,9 @@ typedef enum uwbEvent_e {
 
 #define LOCODECK_NR_OF_ANCHORS 6
 
-typedef uint64_t locoAddress_t;
+typedef uint16_t locoAddress_t;
+//typedef uint64_t locoAddress_t;
+
 
 typedef struct {
   const uint64_t antennaDelay;
@@ -64,7 +66,7 @@ typedef struct {
   bool anchorPositionOk;
 
   float distance[LOCODECK_NR_OF_ANCHORS];
-  float pressures[LOCODECK_NR_OF_ANCHORS];
+ // float pressures[LOCODECK_NR_OF_ANCHORS];
   int failedRanging[LOCODECK_NR_OF_ANCHORS];
   volatile uint16_t rangingState;
 } lpsAlgoOptions_t;

@@ -8,37 +8,22 @@
 // Packet format with compressed PAN and 64Bit addresses
 // Maximum 64 bytes payload
 typedef struct packet_s {
-    union {
-      uint16_t fcf;
-      struct {
-        uint16_t type:3;
-        uint16_t security:1;
-        uint16_t framePending:1;
-        uint16_t ack:1;
-        uint16_t ipan:1;
-        uint16_t reserved:3;
-        uint16_t destAddrMode:2;
-        uint16_t version:2;
-        uint16_t srcAddrMode:2;
-      } fcf_s;
-    };
 
-    uint8_t seq;
-    uint16_t pan;
-    locoAddress_t destAddress;
-    locoAddress_t sourceAddress;
-
-    uint8_t payload[64];
+	uint8_t frameCtrl[2];
+	uint8_t seqNum;
+        uint8_t panId[2];
+	uint16_t destAddress;
+	uint16_t sourceAddress;
+        uint8_t payload[64];
+	uint8_t fcs[2];
 } __attribute__((packed)) packet_t;
 
-#define MAC80215_PACKET_INIT(packet, TYPE) packet.fcf_s.type = (TYPE); \
-  packet.fcf_s.security = 0; \
-  packet.fcf_s.framePending = 0; \
-  packet.fcf_s.ack = 0; \
-  packet.fcf_s.ipan = 1; \
-  packet.fcf_s.destAddrMode = 3; \
-  packet.fcf_s.version = 1; \
-  packet.fcf_s.srcAddrMode = 3;
+#define MAC80215_PACKET_INIT(packet)  packet.frameCtrl[0] = 0x41; \
+  packet.frameCtrl[1] = 0x88; \
+  packet.seqNum = 0; \
+  packet.panId[0] = 0xAE70 & 0xFF; \
+  packet.panId[1] = (0xAE70 >> 8) & 0xFF; \
+  packet.sourceAddress = 9; 
 
 
 #define MAC802154_TYPE_BEACON 0

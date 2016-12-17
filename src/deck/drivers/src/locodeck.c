@@ -71,7 +71,7 @@
 // As an option you can set a static position in this file and set
 // anchorPositionOk to enable sending the anchor rangings to the Kalman filter
 
-static lpsAlgoOptions_t algoOptions = {
+/*static lpsAlgoOptions_t algoOptions = {
   .tagAddress = 0xbccf000000000008,
   .anchorAddress = {
     0xbccf000000000001,
@@ -80,7 +80,19 @@ static lpsAlgoOptions_t algoOptions = {
     0xbccf000000000004,
     0xbccf000000000005,
     0xbccf000000000006
-  },
+  },*/
+
+  static lpsAlgoOptions_t algoOptions = {
+	.tagAddress = 0x0008,
+	.anchorAddress = {
+	  0x0001,
+	  0x0002,
+	  0x0003,
+	  0x0004,
+	  0x0005,
+	  0x0006
+	},
+
   .antennaDelay = (ANTENNA_OFFSET*499.2e6*128)/299792458.0, // In radio tick
   .rangingFailedThreshold = 6,
  
@@ -88,7 +100,7 @@ static lpsAlgoOptions_t algoOptions = {
 
   // To set a static anchor position from startup, uncomment and modify the
   // following code:
-/*
+
   .anchorPosition = {
     {x: 0.99, y: 1.49, z: 1.80},
     {x: 0.99, y: 3.29, z: 1.80},
@@ -98,7 +110,7 @@ static lpsAlgoOptions_t algoOptions = {
     {x: 4.70, y: 1.14, z: 0.20},
   },
   .anchorPositionOk = true,
-*/
+
 };
 
 #if LPS_TDOA_ENABLE
@@ -341,14 +353,14 @@ LOG_ADD(LOG_FLOAT, distance5, &algoOptions.distance[4])
 LOG_ADD(LOG_FLOAT, distance6, &algoOptions.distance[5])
 LOG_ADD(LOG_FLOAT, distance7, &algoOptions.distance[6])
 LOG_ADD(LOG_FLOAT, distance8, &algoOptions.distance[7])
-LOG_ADD(LOG_FLOAT, pressure1, &algoOptions.pressures[0])
+/*LOG_ADD(LOG_FLOAT, pressure1, &algoOptions.pressures[0])
 LOG_ADD(LOG_FLOAT, pressure2, &algoOptions.pressures[1])
 LOG_ADD(LOG_FLOAT, pressure3, &algoOptions.pressures[2])
 LOG_ADD(LOG_FLOAT, pressure4, &algoOptions.pressures[3])
 LOG_ADD(LOG_FLOAT, pressure5, &algoOptions.pressures[4])
 LOG_ADD(LOG_FLOAT, pressure6, &algoOptions.pressures[5])
 LOG_ADD(LOG_FLOAT, pressure7, &algoOptions.pressures[6])
-LOG_ADD(LOG_FLOAT, pressure8, &algoOptions.pressures[7])
+LOG_ADD(LOG_FLOAT, pressure8, &algoOptions.pressures[7])*/
 LOG_ADD(LOG_UINT16, state, &algoOptions.rangingState)
 LOG_GROUP_STOP(ranging)
 

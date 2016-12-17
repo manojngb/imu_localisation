@@ -17,14 +17,17 @@
 extern uwbAlgorithm_t uwbTwrTagAlgorithm;
 
 typedef struct {
-  uint8_t pollRx[5];
-  uint8_t answerTx[5];
-  uint8_t finalRx[5];
+  uint64_t dummy_polltx;	
+  uint64_t pollRx;
+  uint64_t answerTx;
+  uint64_t dummy_answerRx;
+  uint64_t dummy_finalTx;
+  uint64_t finalRx;
 
-  float pressure;
+/*  float pressure;
   float temperature;
   float asl;
-  uint8_t pressure_ok;
+  uint8_t pressure_ok; */
 } __attribute__((packed)) lpsTwrTagReportPayload_t;
 
 

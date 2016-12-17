@@ -248,7 +248,8 @@ static void setTime(uint8_t* data, const dwTime_t* time) {
 static void populatePacket(packet_t* packet, uint8_t seqNr, uint8_t type, locoAddress_t sourceAddress, locoAddress_t destinationAddress) {
   memset(packet, 0, sizeof(packet_t));
 
-  MAC80215_PACKET_INIT((*packet), MAC802154_TYPE_DATA);
+  //MAC80215_PACKET_INIT((*packet), MAC802154_TYPE_DATA);
+    MAC80215_PACKET_INIT((*packet));
   packet->pan = 0xbccf;
   packet->payload[LPS_TWR_SEQ] = seqNr;
   packet->payload[LPS_TWR_TYPE] = type;

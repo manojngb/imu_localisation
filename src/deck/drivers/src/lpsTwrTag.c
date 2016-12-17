@@ -134,18 +134,18 @@ static uint32_t rxcallback(dwDevice_t *dev) {
       break;
     case LPS_TWR_REPORT:
     {
-      lpsTwrTagReportPayload_t *report = (lpsTwrTagReportPayload_t *)(rxPacket.payload+2);
+      lpsTwrTagReportPayload_t *report = (lpsTwrTagReportPayload_t *)(rxPacket.payload+4);   /* 2 */  
       double tround1, treply1, treply2, tround2, tprop_ctn, tprop;
 
       if (rxPacket.payload[LPS_TWR_SEQ] != curr_seq) {
         return 0;
       }
 
-      memcpy(&poll_rx, &report->pollRx, 5);
-      memcpy(&answer_tx, &report->answerTx, 5);
-      memcpy(&final_rx, &report->finalRx, 5);
+      memcpy(&poll_rx, &report->pollRx, 8);
+      memcpy(&answer_tx, &report->answerTx, 8);
+      memcpy(&final_rx, &report->finalRx, 8);
 
-      tround1 = answer_rx.low32 - poll_tx.low32;
+      tround1 = answer_rx.low32- poll_tx.low32;
       treply1 = answer_tx.low32 - poll_rx.low32;
       tround2 = final_rx.low32 - answer_tx.low32;
       treply2 = final_tx.low32 - answer_rx.low32;
@@ -154,7 +154,7 @@ static uint32_t rxcallback(dwDevice_t *dev) {
 
       tprop = tprop_ctn / LOCODECK_TS_FREQ;
       options->distance[current_anchor] = SPEED_OF_LIGHT * tprop;
-      options->pressures[current_anchor] = report->asl;
+     // options->pressures[current_anchor] = report->asl;
 
 #ifdef ESTIMATOR_TYPE_kalman
       // Outliers rejection
@@ -199,6 +199,7 @@ void initiateRanging(dwDevice_t *dev)
 
   txPacket.payload[LPS_TWR_TYPE] = LPS_TWR_POLL;
   txPacket.payload[LPS_TWR_SEQ] = ++curr_seq;
+  txPacket.seqNum = curr_seq;
 
   txPacket.sourceAddress = options->tagAddress;
   txPacket.destAddress = options->anchorAddress[current_anchor];
@@ -282,8 +283,11 @@ static void twrTagInit(dwDevice_t *dev, lpsAlgoOptions_t* algoOptions)
 
   // Initialize the packet in the TX buffer
   memset(&txPacket, 0, sizeof(txPacket));
-  MAC80215_PACKET_INIT(txPacket, MAC802154_TYPE_DATA);
-  txPacket.pan = 0xbccf;
+  MAC80215_PACKET_INIT(txPacket);
+//  txPacket.pan = 0xbccf;
+  txPacket.panId[0] = 0x70;
+  txPacket.panId[1] = 0xAE;
+
 
   memset(&poll_tx, 0, sizeof(poll_tx));
   memset(&poll_rx, 0, sizeof(poll_rx));
@@ -299,7 +303,7 @@ static void twrTagInit(dwDevice_t *dev, lpsAlgoOptions_t* algoOptions)
   ranging_complete = false;
 
   memset(options->distance, 0, sizeof(options->distance));
-  memset(options->pressures, 0, sizeof(options->pressures));
+ // memset(options->pressures, 0, sizeof(options->pressures));
   memset(options->failedRanging, 0, sizeof(options->failedRanging));
 }
 
