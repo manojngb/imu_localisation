@@ -33,7 +33,7 @@
 #include "task.h"
 
 #include "log.h"
-
+#include "debug.h"
 #include "stabilizer_types.h"
 #ifdef ESTIMATOR_TYPE_kalman
 #include "estimator_kalman.h"
@@ -78,13 +78,15 @@ static void txcallback(dwDevice_t *dev)
   dwTime_t departure;
   dwGetTransmitTimestamp(dev, &departure);
   departure.full += (options->antennaDelay / 2);
-
+  //dwblinkAllLeds(dev);
   switch (txPacket.payload[0]) {
     case LPS_TWR_POLL:
       poll_tx = departure;
+      DEBUG_PRINT(" tx poll ! \r\n");
       break;
     case LPS_TWR_FINAL:
       final_tx = departure;
+      DEBUG_PRINT(" tx final ! \r\n");
       break;
   }
 }
@@ -101,43 +103,48 @@ static uint32_t rxcallback(dwDevice_t *dev) {
 
   dwGetData(dev, (uint8_t*)&rxPacket, dataLength);
 
-  if (rxPacket.destAddress != options->tagAddress) {
+  if (rxPacket.destAddress != options->tagAddress && rxPacket.destAddress != 0xFFFF) {
     dwNewReceive(dev);
     dwSetDefaults(dev);
     dwStartReceive(dev);
+    DEBUG_PRINT(" Rx Callback - Address mismatch ! \r\n");
     return MAX_TIMEOUT;
   }
 
-  txPacket.destAddress = rxPacket.sourceAddress;
-  txPacket.sourceAddress = rxPacket.destAddress;
+  //txPacket.destAddress = rxPacket.sourceAddress;
+  //txPacket.sourceAddress = rxPacket.destAddress;
+  txPacket.destAddress = 3;
+  txPacket.sourceAddress = 9;
 
   switch(rxPacket.payload[LPS_TWR_TYPE]) {
     // Tag received messages
     case LPS_TWR_ANSWER:
       if (rxPacket.payload[LPS_TWR_SEQ] != curr_seq) {
+    	  DEBUG_PRINT(" Rx Callback - seq mismatch %d %d  ! \r\n", rxPacket.payload[LPS_TWR_SEQ] , curr_seq);
+    	  DEBUG_PRINT(" Rx Callback - tag address %x ! \r\n", (rxPacket.sourceAddress&0x00FF));
         return 0;
       }
 
+      DEBUG_PRINT(" LPS_ANSWER ! \r\n");
       txPacket.payload[LPS_TWR_TYPE] = LPS_TWR_FINAL;
       txPacket.payload[LPS_TWR_SEQ] = rxPacket.payload[LPS_TWR_SEQ];
-
       dwGetReceiveTimestamp(dev, &arival);
       arival.full -= (options->antennaDelay / 2);
       answer_rx = arival;
-
       dwNewTransmit(dev);
       dwSetData(dev, (uint8_t*)&txPacket, MAC802154_HEADER_LENGTH+2);
-
+      DEBUG_PRINT(" LPS_ANSWER packet seq pay[0] %x %x ! \r\n", txPacket.payload[1],txPacket.payload[0]);
       dwWaitForResponse(dev, true);
       dwStartTransmit(dev);
-
       break;
+
     case LPS_TWR_REPORT:
     {
       lpsTwrTagReportPayload_t *report = (lpsTwrTagReportPayload_t *)(rxPacket.payload+4);   /* 2 */  
       double tround1, treply1, treply2, tround2, tprop_ctn, tprop;
-
+      DEBUG_PRINT(" LPS_REPORT ! \r\n");
       if (rxPacket.payload[LPS_TWR_SEQ] != curr_seq) {
+    	  DEBUG_PRINT(" Rx Callback - seq mismatch 2! \r\n");
         return 0;
       }
 
@@ -203,6 +210,7 @@ void initiateRanging(dwDevice_t *dev)
 
   txPacket.sourceAddress = options->tagAddress;
   txPacket.destAddress = options->anchorAddress[current_anchor];
+  DEBUG_PRINT(" current anchor %d ! \r\n", current_anchor);
 
   dwNewTransmit(dev);
   dwSetDefaults(dev);
@@ -210,6 +218,8 @@ void initiateRanging(dwDevice_t *dev)
 
   dwWaitForResponse(dev, true);
   dwStartTransmit(dev);
+  //DEBUG_PRINT("pkt sent!\r\n");
+  //dwblinkAllLeds(dev);
 }
 
 static uint32_t twrTagOnEvent(dwDevice_t *dev, uwbEvent_t event)
@@ -229,15 +239,19 @@ static uint32_t twrTagOnEvent(dwDevice_t *dev, uwbEvent_t event)
       return MAX_TIMEOUT;
       break;
     case eventTimeout:  // Comes back to timeout after each ranging attempt
-      if (!ranging_complete) {
+      if (!ranging_complete) 
+      {
         options->rangingState &= ~(1<<current_anchor);
-        if (options->failedRanging[current_anchor] < options->rangingFailedThreshold) {
+        if (options->failedRanging[current_anchor] < options->rangingFailedThreshold) 
+        {
           options->failedRanging[current_anchor] ++;
           options->rangingState |= (1<<current_anchor);
         }
 
         failedRanging[current_anchor]++;
-      } else {
+      } 
+      else 
+      {
         options->rangingState |= (1<<current_anchor);
         options->failedRanging[current_anchor] = 0;
 
@@ -245,14 +259,18 @@ static uint32_t twrTagOnEvent(dwDevice_t *dev, uwbEvent_t event)
       }
 
       // Handle ranging statistic
-      if (xTaskGetTickCount() > (statisticStartTick+1000)) {
+      if (xTaskGetTickCount() > (statisticStartTick+1000)) 
+      {
         statisticStartTick = xTaskGetTickCount();
 
-        for (int i=0; i<LOCODECK_NR_OF_ANCHORS; i++) {
+        for (int i=0; i<LOCODECK_NR_OF_ANCHORS; i++)
+         {
           rangingPerSec[i] = failedRanging[i] + succededRanging[i];
-          if (rangingPerSec[i] > 0) {
+          if (rangingPerSec[i] > 0) 
+          {
             rangingSuccessRate[i] = 100.0f*(float)succededRanging[i] / (float)rangingPerSec[i];
-          } else {
+          } else 
+          {
             rangingSuccessRate[i] = 0.0f;
           }
 
@@ -260,7 +278,7 @@ static uint32_t twrTagOnEvent(dwDevice_t *dev, uwbEvent_t event)
           succededRanging[i] = 0;
         }
       }
-
+      
 
       ranging_complete = false;
       initiateRanging(dev);
@@ -285,8 +303,8 @@ static void twrTagInit(dwDevice_t *dev, lpsAlgoOptions_t* algoOptions)
   memset(&txPacket, 0, sizeof(txPacket));
   MAC80215_PACKET_INIT(txPacket);
 //  txPacket.pan = 0xbccf;
-  txPacket.panId[0] = 0x70;
-  txPacket.panId[1] = 0xAE;
+//  txPacket.panId[0] = 0x70;
+//  txPacket.panId[1] = 0xAE;
 
 
   memset(&poll_tx, 0, sizeof(poll_tx));

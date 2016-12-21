@@ -38,13 +38,14 @@
 #endif
 
 #ifndef DECK_FORCE
-#define DECK_FORCE
+#define DECK_FORCE 
 #endif
 
 #define xstr(s) str(s)
 #define str(s) #s
 
-static char* deck_force = xstr(DECK_FORCE);
+//static char* deck_force = xstr(DECK_FORCE);
+static char* deck_force = xstr(bcDWM1000);
 
 extern void deckInfoInit();
 

@@ -61,7 +61,7 @@
 #if LPS_TDOA_ENABLE
   #define RX_TIMEOUT 10000
 #else
-  #define RX_TIMEOUT 1000
+  #define RX_TIMEOUT 65000
 #endif
 
 
@@ -83,14 +83,14 @@
   },*/
 
   static lpsAlgoOptions_t algoOptions = {
-	.tagAddress = 0x0008,
+	.tagAddress = 0x0009,
 	.anchorAddress = {
-	  0x0001,
-	  0x0002,
-	  0x0003,
-	  0x0004,
-	  0x0005,
-	  0x0006
+	//  0x0001,
+	//  0x0002,
+	  0x0003
+	//  0x0004,
+	//  0x0005,
+	//  0x0006
 	},
 
   .antennaDelay = (ANTENNA_OFFSET*499.2e6*128)/299792458.0, // In radio tick
@@ -102,12 +102,12 @@
   // following code:
 
   .anchorPosition = {
-    {x: 0.99, y: 1.49, z: 1.80},
-    {x: 0.99, y: 3.29, z: 1.80},
-    {x: 4.67, y: 2.54, z: 1.80},
-    {x: 0.59, y: 2.27, z: 0.20},
-    {x: 4.70, y: 3.38, z: 0.20},
-    {x: 4.70, y: 1.14, z: 0.20},
+  //  {x: 0.99, y: 1.49, z: 1.80},
+    {x: 0.99, y: 3.29, z: 1.80}
+ //   {x: 4.67, y: 2.54, z: 1.80},
+  //  {x: 0.59, y: 2.27, z: 0.20},
+  //  {x: 4.70, y: 3.38, z: 0.20},
+  //  {x: 4.70, y: 1.14, z: 0.20},
   },
   .anchorPositionOk = true,
 
@@ -129,15 +129,19 @@ static uint32_t timeout;
 
 static void txCallback(dwDevice_t *dev)
 {
+	//DEBUG_PRINT(" Tx Callback ! \r\n");
   timeout = algorithm->onEvent(dev, eventPacketSent);
 }
 
 static void rxCallback(dwDevice_t *dev)
 {
+	//DEBUG_PRINT(" Rx Callback ! \r\n");
   timeout = algorithm->onEvent(dev, eventPacketReceived);
 }
 
-static void rxTimeoutCallback(dwDevice_t * dev) {
+static void rxTimeoutCallback(dwDevice_t * dev)
+{
+	DEBUG_PRINT(" RxTimeout Callback ! \r\n");
   timeout = algorithm->onEvent(dev, eventReceiveTimeout);
 }
 
@@ -155,10 +159,17 @@ static void uwbTask(void* parameters)
   while(1) {
     if (xSemaphoreTake(irqSemaphore, timeout/portTICK_PERIOD_MS)) {
       do{
+          //DEBUG_PRINT(" I\r\n");
           dwHandleInterrupt(dwm);
+          //DEBUG_PRINT("after I\r\n");
+
       } while(digitalRead(DECK_GPIO_RX1) != 0);
     } else {
+      //DEBUG_PRINT("bef timeout\r\n");
+      //const TickType_t xDelay = 2*500/portTICK_PERIOD_MS;
       timeout = algorithm->onEvent(dwm, eventTimeout);
+      //vTaskDelay(xDelay);
+      //DEBUG_PRINT("aft timeout\r\n");
     }
   }
 }
@@ -248,7 +259,7 @@ static void dwm1000Init(DeckInfo *info)
   bzero(&GPIO_InitStructure, sizeof(GPIO_InitStructure));
   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-  //GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
   GPIO_Init(GPIOC, &GPIO_InitStructure);
 
   SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOC, EXTI_PinSource11);
@@ -270,7 +281,7 @@ static void dwm1000Init(DeckInfo *info)
   pinMode(CS_PIN, OUTPUT);
 
   // Reset the DW1000 chip
-  GPIO_WriteBit(GPIOC, GPIO_Pin_10, 0);
+  //GPIO_WriteBit(GPIOC, GPIO_Pin_10, 0);
   vTaskDelay(M2T(10));
   GPIO_WriteBit(GPIOC, GPIO_Pin_10, 1);
   vTaskDelay(M2T(10));
@@ -289,7 +300,7 @@ static void dwm1000Init(DeckInfo *info)
   }
 
   dwEnableAllLeds(dwm);
-
+  DEBUG_PRINT("passed configure DW1000!\r\n");
   dwTime_t delay = {.full = 0};
   dwSetAntenaDelay(dwm, delay);
 
