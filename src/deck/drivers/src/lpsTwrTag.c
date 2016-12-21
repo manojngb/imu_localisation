@@ -121,7 +121,7 @@ static uint32_t rxcallback(dwDevice_t *dev) {
     case LPS_TWR_ANSWER:
       if (rxPacket.payload[LPS_TWR_SEQ] != curr_seq) {
     	  DEBUG_PRINT(" Rx Callback - seq mismatch %d %d  ! \r\n", rxPacket.payload[LPS_TWR_SEQ] , curr_seq);
-    	  DEBUG_PRINT(" Rx Callback - tag address %x ! \r\n", (rxPacket.sourceAddress&0x00FF));
+    	 // DEBUG_PRINT(" Rx Callback - tag address %x ! \r\n", (rxPacket.sourceAddress&0x00FF));
         return 0;
       }
 
@@ -133,7 +133,7 @@ static uint32_t rxcallback(dwDevice_t *dev) {
       answer_rx = arival;
       dwNewTransmit(dev);
       dwSetData(dev, (uint8_t*)&txPacket, MAC802154_HEADER_LENGTH+2);
-      DEBUG_PRINT(" LPS_ANSWER packet seq pay[0] %x %x ! \r\n", txPacket.payload[1],txPacket.payload[0]);
+     // DEBUG_PRINT(" LPS_ANSWER packet seq pay[0] %x %x ! \r\n", txPacket.payload[1],txPacket.payload[0]);
       dwWaitForResponse(dev, true);
       dwStartTransmit(dev);
       break;
@@ -148,9 +148,9 @@ static uint32_t rxcallback(dwDevice_t *dev) {
         return 0;
       }
 
-      memcpy(&poll_rx, &report->pollRx, 8);
-      memcpy(&answer_tx, &report->answerTx, 8);
-      memcpy(&final_rx, &report->finalRx, 8);
+      memcpy(&poll_rx, (uint8_t *)&report->pollRx, 8);
+      memcpy(&answer_tx, (uint8_t *)&report->answerTx, 8);
+      memcpy(&final_rx, (uint8_t *)&report->finalRx, 8);
 
       tround1 = answer_rx.low32- poll_tx.low32;
       treply1 = answer_tx.low32 - poll_rx.low32;
@@ -161,6 +161,7 @@ static uint32_t rxcallback(dwDevice_t *dev) {
 
       tprop = tprop_ctn / LOCODECK_TS_FREQ;
       options->distance[current_anchor] = SPEED_OF_LIGHT * tprop;
+      DEBUG_PRINT(" Report distance %f ! \r\n", options->distance[current_anchor]);
      // options->pressures[current_anchor] = report->asl;
 
 #ifdef ESTIMATOR_TYPE_kalman
