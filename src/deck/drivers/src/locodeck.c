@@ -61,7 +61,7 @@
 #if LPS_TDOA_ENABLE
   #define RX_TIMEOUT 10000
 #else
-  #define RX_TIMEOUT 65000
+  #define RX_TIMEOUT 40000
 #endif
 
 
@@ -86,7 +86,7 @@
 	.tagAddress = 0x0009,
 	.anchorAddress = {
 	//  0x0001,
-	//  0x0002,
+	  0x0002,
 	  0x0003
 	//  0x0004,
 	//  0x0005,
@@ -102,8 +102,8 @@
   // following code:
 
   .anchorPosition = {
-  //  {x: 0.99, y: 1.49, z: 1.80},
-    {x: 0.99, y: 3.29, z: 1.80}
+    {x: 1, y: -3.17 , z: 2.434},
+    {x: 0, y: 0, z: 2.434}
  //   {x: 4.67, y: 2.54, z: 1.80},
   //  {x: 0.59, y: 2.27, z: 0.20},
   //  {x: 4.70, y: 3.38, z: 0.20},
@@ -141,7 +141,7 @@ static void rxCallback(dwDevice_t *dev)
 
 static void rxTimeoutCallback(dwDevice_t * dev)
 {
-	DEBUG_PRINT(" RxTimeout Callback ! \r\n");
+  //DEBUG_PRINT(" RxTimeout Callback ! \r\n");
   timeout = algorithm->onEvent(dev, eventReceiveTimeout);
 }
 
@@ -165,7 +165,7 @@ static void uwbTask(void* parameters)
 
       } while(digitalRead(DECK_GPIO_RX1) != 0);
     } else {
-      //DEBUG_PRINT("bef timeout\r\n");
+      //DEBUG_PRINT("event timeout\r\n");
       //const TickType_t xDelay = 2*500/portTICK_PERIOD_MS;
       timeout = algorithm->onEvent(dwm, eventTimeout);
       //vTaskDelay(xDelay);

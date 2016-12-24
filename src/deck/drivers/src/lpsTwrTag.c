@@ -113,7 +113,7 @@ static uint32_t rxcallback(dwDevice_t *dev) {
 
   //txPacket.destAddress = rxPacket.sourceAddress;
   //txPacket.sourceAddress = rxPacket.destAddress;
-  txPacket.destAddress = 3;
+  txPacket.destAddress = rxPacket.sourceAddress;
   txPacket.sourceAddress = 9;
 
   switch(rxPacket.payload[LPS_TWR_TYPE]) {
@@ -161,7 +161,7 @@ static uint32_t rxcallback(dwDevice_t *dev) {
 
       tprop = tprop_ctn / LOCODECK_TS_FREQ;
       options->distance[current_anchor] = SPEED_OF_LIGHT * tprop;
-      DEBUG_PRINT(" Report distance %f ! \r\n", options->distance[current_anchor]);
+      DEBUG_PRINT(" Report distance %f current anchor % d ! \r\n", options->distance[current_anchor],current_anchor);
      // options->pressures[current_anchor] = report->asl;
 
 #ifdef ESTIMATOR_TYPE_kalman
@@ -211,7 +211,7 @@ void initiateRanging(dwDevice_t *dev)
 
   txPacket.sourceAddress = options->tagAddress;
   txPacket.destAddress = options->anchorAddress[current_anchor];
-  DEBUG_PRINT(" current anchor %d ! \r\n", current_anchor);
+  //DEBUG_PRINT(" current anchor %d ! \r\n", current_anchor);
 
   dwNewTransmit(dev);
   dwSetDefaults(dev);
