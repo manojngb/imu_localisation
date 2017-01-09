@@ -150,7 +150,7 @@ static inline bool stateEstimatorHasTDOAPacket(tdoaMeasurement_t *uwb) {
 #define RAD_TO_DEG (180.0f/PI)
 
 #define GRAVITY_MAGNITUDE (9.81f) // we use the magnitude such that the sign/direction is explicit in calculations
-#define CRAZYFLIE_WEIGHT_grams (40.0f)  //27.0
+#define CRAZYFLIE_WEIGHT_grams (30.0f)  //27.0
 
 //thrust is thrust mapped for 65536 <==> 60 GRAMS!
 #define CONTROL_TO_ACC (GRAVITY_MAGNITUDE*60.0f/CRAZYFLIE_WEIGHT_grams/65536.0f)
@@ -184,8 +184,8 @@ static inline bool stateEstimatorHasTDOAPacket(tdoaMeasurement_t *uwb) {
 #define MAX_VELOCITY (10) //meters per second
 
 // Initial variances, uncertain of position, but know we're stationary and roughly flat
-static const float stdDevInitialPosition_xy = 100;
-static const float stdDevInitialPosition_z = 1;
+static const float stdDevInitialPosition_xy = 1; //100
+static const float stdDevInitialPosition_z = 0.2;   //1
 static const float stdDevInitialVelocity = 0.01;
 static const float stdDevInitialAttitude_rollpitch = 0.01;
 static const float stdDevInitialAttitude_yaw = 0.1;

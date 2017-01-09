@@ -82,11 +82,11 @@ static void txcallback(dwDevice_t *dev)
   switch (txPacket.payload[0]) {
     case LPS_TWR_POLL:
       poll_tx = departure;
-      DEBUG_PRINT(" tx poll ! \r\n");
+     //DEBUG_PRINT(" tx poll ! \r\n");
       break;
     case LPS_TWR_FINAL:
       final_tx = departure;
-      DEBUG_PRINT(" tx final ! \r\n");
+     // DEBUG_PRINT(" tx final ! \r\n");
       break;
   }
 }
@@ -125,7 +125,7 @@ static uint32_t rxcallback(dwDevice_t *dev) {
         return 0;
       }
 
-      DEBUG_PRINT(" LPS_ANSWER ! \r\n");
+      //DEBUG_PRINT(" LPS_ANSWER ! \r\n");
       txPacket.payload[LPS_TWR_TYPE] = LPS_TWR_FINAL;
       txPacket.payload[LPS_TWR_SEQ] = rxPacket.payload[LPS_TWR_SEQ];
       dwGetReceiveTimestamp(dev, &arival);
@@ -142,7 +142,7 @@ static uint32_t rxcallback(dwDevice_t *dev) {
     {
       lpsTwrTagReportPayload_t *report = (lpsTwrTagReportPayload_t *)(rxPacket.payload+4);   /* 2 */  
       double tround1, treply1, treply2, tround2, tprop_ctn, tprop;
-      DEBUG_PRINT(" LPS_REPORT ! \r\n");
+      //DEBUG_PRINT(" LPS_REPORT ! \r\n");
       if (rxPacket.payload[LPS_TWR_SEQ] != curr_seq) {
     	  DEBUG_PRINT(" Rx Callback - seq mismatch 2! \r\n");
         return 0;
@@ -280,7 +280,7 @@ static uint32_t twrTagOnEvent(dwDevice_t *dev, uwbEvent_t event)
         }
       }
       
-
+      DEBUG_PRINT(" Timeout current anchor % d ! \r\n", current_anchor);
       ranging_complete = false;
       initiateRanging(dev);
       return MAX_TIMEOUT;

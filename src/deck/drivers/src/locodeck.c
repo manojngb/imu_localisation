@@ -56,12 +56,12 @@
 #endif
 
 
-#define CS_PIN DECK_GPIO_IO1
+#define CS_PIN DECK_GPIO_IO4
 
 #if LPS_TDOA_ENABLE
-  #define RX_TIMEOUT 10000
+  #define RX_TIMEOUT 60000
 #else
-  #define RX_TIMEOUT 40000
+  #define RX_TIMEOUT 30000
 #endif
 
 
@@ -85,12 +85,13 @@
   static lpsAlgoOptions_t algoOptions = {
 	.tagAddress = 0x0009,
 	.anchorAddress = {
-	//  0x0001,
-	  0x0002,
-	  0x0003
-	//  0x0004,
-	//  0x0005,
-	//  0x0006
+	  0x000A,
+	  0x000B,
+	  0x0005,
+	  0x0004,
+	  0x0003,
+	  0x0008,
+	  0x0006
 	},
 
   .antennaDelay = (ANTENNA_OFFSET*499.2e6*128)/299792458.0, // In radio tick
@@ -102,12 +103,13 @@
   // following code:
 
   .anchorPosition = {
-    {x: 1, y: -3.17 , z: 2.434},
-    {x: 0, y: 0, z: 2.434}
- //   {x: 4.67, y: 2.54, z: 1.80},
-  //  {x: 0.59, y: 2.27, z: 0.20},
-  //  {x: 4.70, y: 3.38, z: 0.20},
-  //  {x: 4.70, y: 1.14, z: 0.20},
+    {x: 1.062, y: 1.323 , z: 2.43},
+	{x: 1, y: -0.486, z: 2.4},
+	{x: -1.35, y: 1.323, z: 2.4},
+    {x: -1.37, y: -0.486, z: 2.43},
+	{x: 0.3, y: 0.91 , z: 0},
+    {x: 0.61, y: -1.22, z: 0},
+    {x: -1.83, y: 0.3 , z:0}
   },
   .anchorPositionOk = true,
 
@@ -271,11 +273,11 @@ static void dwm1000Init(DeckInfo *info)
   EXTI_Init(&EXTI_InitStructure);
 
   // Init reset output
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-  GPIO_Init(GPIOC, &GPIO_InitStructure);
+  GPIO_Init(GPIOB, &GPIO_InitStructure);
 
   // Init CS pin
   pinMode(CS_PIN, OUTPUT);
@@ -283,7 +285,7 @@ static void dwm1000Init(DeckInfo *info)
   // Reset the DW1000 chip
   //GPIO_WriteBit(GPIOC, GPIO_Pin_10, 0);
   vTaskDelay(M2T(10));
-  GPIO_WriteBit(GPIOC, GPIO_Pin_10, 1);
+  GPIO_WriteBit(GPIOB, GPIO_Pin_5, 1);
   vTaskDelay(M2T(10));
 
   // Semaphore that protect the SPI communication
