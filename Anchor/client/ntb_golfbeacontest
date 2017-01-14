@@ -1,0 +1,179 @@
+#!/usr/bin/python3
+
+# -- TCP --
+import socket
+import sys
+
+# -- imports --
+import signal
+import os
+import re
+import serial
+import time
+import datetime
+import numpy as np
+import collections
+import struct
+import subprocess
+from ntblib import client as ntbclient
+
+# file setup
+if len(sys.argv) > 1:
+	fstamp = sys.argv[1]
+else:
+	fstamp = str(datetime.datetime.now().replace(microsecond=0))
+fpath_out = '/home/paul/Desktop/output' + '-' + fstamp
+if not os.path.exists(fpath_out):
+	os.makedirs(fpath_out)
+print('logging to', fpath_out)
+
+# network setup
+nodes = ('ntb-alpha', 'ntb-bravo', 'ntb-charlie', 'ntb-delta', 'ntb-echo', 'ntb-foxtrot', 'ntb-golf', 'ntb-hotel')
+port = 23458
+tcp_clients = []
+
+# test set up
+beacon_per = 100 # ms
+beacon_len = 60*60 # Sec
+
+# ===== HANDLE CTRL-C =====
+def sys_exit_handler(signal, frame):
+	print('\n----- KEYBOARD INTERRUPT ----- ')
+	print('Cleaning up TCP clients:')
+	for clnt in tcp_clients:
+		addr = clnt.getAddress()
+		print('   - Closing client at (', addr[0], ', ', addr[1], ')')
+		clnt.stop()
+		while not clnt.stopped():
+			pass
+		clnt.join()
+		del clnt
+	# exit the program
+	sys.exit(0)
+
+# ===== MAIN ENTRY POINT =====
+if __name__ == '__main__':
+	# assign ctrl-c handler
+	signal.signal(signal.SIGINT, sys_exit_handler)
+
+	# first check to make sure all nodes are up
+	print('============================================')
+	print('           CONTACTING ALL NODES             ')
+	print('============================================')
+
+	for node in nodes:
+		# wait for ping from node
+		print('contacting node', node)
+		max_pings = 5
+		pings = 0
+		for p in range(max_pings):
+			ping = subprocess.Popen(["ping", "-c", "1", node], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+			resp, err = ping.communicate()
+			if not re.search(b'Unreachable', resp):
+				print('                           -> UP')
+				break
+			else:
+				print('                           ...')
+				pings += 1
+		if pings == max_pings:
+			print('                           -> DOWN (aborting)')
+			sys.exit(0)
+
+	# Reset all nodes
+	print('============================================')
+	print('           RESETTING ALL NODES              ')
+	print('============================================')
+
+	for node in nodes:
+		# first we need to restart the node so it'll boot into the IAP sector
+		print('rebooting node', node)
+		server_address = (node, port)
+		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		sock.connect(server_address)
+		values = (ord('C'), ord('r'), ord('0'))
+		packer = struct.Struct('! B B B')
+		packed_data = packer.pack(*values)
+		sock.sendall(packed_data)
+		sock.close()
+
+
+	# re-contact all nodes after reboot
+	print('============================================')
+	print('           RE-CONTACTING ALL NODES          ')
+	print('============================================')
+	time.sleep(15)
+
+	for node in nodes:
+		# wait for ping from node
+		print('contacting node', node)
+		max_pings = 10
+		pings = 0
+		for p in range(max_pings):
+			ping = subprocess.Popen(["ping", "-c", "1", node], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+			resp, err = ping.communicate()
+			if not re.search(b'Unreachable', resp):
+				print('                           -> UP')
+				break
+			else:
+				print('                           ...')
+				pings += 1
+		if pings == max_pings:
+			print('                           -> DOWN (aborting)')
+			sys.exit(0)
+
+	# Run each node as a beaconer
+	print('============================================')
+	print('           SINGLE BEACON TX TEST            ')
+	print('============================================')
+	time.sleep(30)
+
+	node = 'ntb-golf'
+	# make a folder for this test
+	folder = fpath_out + '/' + 'singletx-' + node
+	if not os.path.exists(folder):
+		os.makedirs(folder)
+
+	# set beacon rate for this node
+	print('Setting node', node, 'to beacon every', beacon_per, 'ms')
+	server_address = (node, port)
+	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	sock.connect(server_address)
+	values = (ord('R'), ord('b'), int(beacon_per/10)) 
+	packer = struct.Struct('! B B B')
+	packed_data = packer.pack(*values)
+	sock.sendall(packed_data)
+	sock.close()
+
+	# log on all nodes
+	tcp_clients = []
+	for n in nodes:
+		clnt = ntbclient.TcpClient( (n,port) )
+		if clnt.getStatus() == 'Connected':
+			clnt.writeToFile(folder+'/'+n)
+			tcp_clients.append(clnt)
+			clnt.streamRanges(True)
+			clnt.start()
+
+	print('Testing for',beacon_len/60.0,'min(s)')
+	time.sleep(beacon_len)
+
+
+	print('Disabling beaconing on node', node)
+	server_address = (node, port)
+	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	sock.connect(server_address)
+	values = (ord('R'), ord('b'), 0) 
+	packer = struct.Struct('! B B B')
+	packed_data = packer.pack(*values)
+	sock.sendall(packed_data)
+	sock.close()
+
+	# stopping logging
+	for clnt in tcp_clients:
+		addr = clnt.getAddress()
+		print('   - Closing client at (', addr[0], ', ', addr[1], ')')
+		clnt.stop()
+		while not clnt.stopped():
+			pass
+		clnt.join()
+		del clnt

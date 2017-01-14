@@ -1,0 +1,11 @@
+#!/bin/bash
+
+ntb_firmware_update ./build/ntb_anchor.bin ntb-alpha
+ntb_firmware_update ./build/ntb_anchor.bin ntb-bravo
+ntb_firmware_update ./build/ntb_anchor.bin ntb-charlie
+ntb_firmware_update ./build/ntb_anchor.bin ntb-delta
+ntb_firmware_update ./build/ntb_anchor.bin ntb-echo
+ntb_firmware_update ./build/ntb_anchor.bin ntb-foxtrot
+ntb_firmware_update ./build/ntb_anchor.bin ntb-golf
+ntb_firmware_update ./build/ntb_anchor.bin ntb-hotel
+
