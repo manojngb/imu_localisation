@@ -1,12 +1,12 @@
-[submodule "vendor/libdw1000"]
-	path = vendor/libdw1000
+[submodule "CF/vendor/libdw1000"]
+	path = CF/vendor/libdw1000
 	url = https://github.com/bitcraze/libdw1000
-[submodule "vendor/unity"]
-	path = vendor/unity
+[submodule "CF/vendor/unity"]
+	path = CF/vendor/unity
 	url = https://github.com/throwtheswitch/unity.git
-[submodule "vendor/cmock"]
-	path = vendor/cmock
+[submodule "CF/vendor/cmock"]
+	path = CF/vendor/cmock
 	url = https://github.com/throwtheswitch/cmock.git
-[submodule "vendor/CMSIS"]
-	path = vendor/CMSIS
+[submodule "CF/vendor/CMSIS"]
+	path = CF/vendor/CMSIS
 	url = https://github.com/ARM-software/CMSIS
