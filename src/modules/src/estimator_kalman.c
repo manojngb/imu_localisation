@@ -184,8 +184,8 @@ static inline bool stateEstimatorHasTDOAPacket(tdoaMeasurement_t *uwb) {
 #define MAX_VELOCITY (10) //meters per second
 
 // Initial variances, uncertain of position, but know we're stationary and roughly flat
-static const float stdDevInitialPosition_xy = 1; //100
-static const float stdDevInitialPosition_z = 0.2;   //1
+static const float stdDevInitialPosition_xy = 100; //100
+static const float stdDevInitialPosition_z = 1;   //1
 static const float stdDevInitialVelocity = 0.01;
 static const float stdDevInitialAttitude_rollpitch = 0.01;
 static const float stdDevInitialAttitude_yaw = 0.1;
@@ -1149,7 +1149,7 @@ void stateEstimatorInit(void) {
 
   // TODO: Can we initialize this more intelligently?
   S[STATE_X] = 0; //0.5
-  S[STATE_Y] = 0; //0.5
+  S[STATE_Y] = -0.3; //0.5
   S[STATE_Z] = 0;
   S[STATE_PX] = 0;
   S[STATE_PY] = 0;

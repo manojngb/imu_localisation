@@ -280,7 +280,7 @@ static uint32_t twrTagOnEvent(dwDevice_t *dev, uwbEvent_t event)
         }
       }
       
-      DEBUG_PRINT(" Timeout current anchor % d ! \r\n", current_anchor);
+      //DEBUG_PRINT(" Timeout current anchor % d ! \r\n", current_anchor);
       ranging_complete = false;
       initiateRanging(dev);
       return MAX_TIMEOUT;

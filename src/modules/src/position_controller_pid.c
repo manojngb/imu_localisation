@@ -63,11 +63,11 @@ struct this_s {
   uint16_t thrustMin;  // Minimum thrust value to output
 };
 
-// Maximum roll/pitch angle permited
-static float rpLimit  = 20;
+// Maximum roll/pitch angle permitted
+static float rpLimit  = 10; //20
 // Velocity maximums
-static float xyVelMax = 1.0f;
-static float zVelMax  = 1.0f;
+static float xyVelMax = 0.25f; //1
+static float zVelMax  = 0.5f;  //1
 static float velMaxOverhead = 1.10f;
 
 #define DT (float)(1.0f/POSITION_RATE)

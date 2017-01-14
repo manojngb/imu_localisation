@@ -50,6 +50,10 @@ from cflib.crazyflie import Crazyflie
 sequence = [(0,    0,   1,  0),
             (0,    0,   1,  0),
             (0,    0,   1,  0),
+            (0,    0,   1,  0),
+            (0,    0,   1,  0),
+            (0,    0,   1,  0),
+            (0,    0,   1,  0),
             (0,    0,   0.3,  0)]
 
 
@@ -137,12 +141,12 @@ class AutonomousSequence:
                 self._cf.commander.send_setpoint(position[1], position[0],
                                                  position[3],
                                                  int(position[2] * 1000))
-                time.sleep(0.01)
+                time.sleep(0.1)
 
         self._cf.commander.send_setpoint(0, 0, 0, 0)
         # Make sure that the last packet leaves before the link is closed
         # since the message queue is not flushed before closing
-        time.sleep(0.1)
+        time.sleep(0.2)
         self._cf.close_link()
 
 
